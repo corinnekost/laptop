@@ -1,0 +1,29 @@
+# Variables for AD setup
+$DomainName = "mydomain.local"
+$DomainNetBIOSName = "MYDOMAIN"
+$DomainAdminUsername = "Administrator"
+$DomainAdminPassword = "password123"
+
+# Install AD DS role
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools -Verbose
+
+# Promote server to domain controller
+Install-ADDSForest `
+  -DomainName $DomainName `
+  -DomainNetbiosName $DomainNetBIOSName `
+  -InstallDNS `
+  -CreateDnsDelegation `
+  -DomainMode "WinThreshold" `
+  -ForestMode "WinThreshold" `
+  -SafeModeAdministratorPassword (ConvertTo-SecureString $DomainAdminPassword -AsPlainText -Force) `
+  -Force:$true `
+  -Verbose
+
+# Configure firewall rules for AD DS
+Get-NetFirewallRule -DisplayGroup "Active Directory Domain Services" | Enable-NetFirewallRule
+
+# Set DNS server to loopback address
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "127.0.0.1"
+
+# Restart server to complete AD setup
+Restart-Computer -Force -Verbose
