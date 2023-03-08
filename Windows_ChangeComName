@@ -1,0 +1,5 @@
+# Prompt the user to input a new computer name
+$newName = Read-Host "Enter the new computer name"
+
+# Set the computer name to the new name
+Rename-Computer -NewName $newName -Force -Restart
